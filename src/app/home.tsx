@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 
 import { requestDevnetSol } from '@/solana/wallet';
@@ -46,6 +46,10 @@ export default function Home() {
 
   const checkIn = () =>
     run('checkin', async () => {
+      if (Platform.OS === 'web') {
+        setNote({ text: 'Check-ins are signed by the Solana wallet on your phone. Install NBX on Android to record one.', needsSol: false });
+        return;
+      }
       const p = await s.checkIn();
       router.push({ pathname: '/proof', params: { day: String(p.day), sig: p.signature } });
     });
@@ -64,7 +68,13 @@ export default function Home() {
       <View style={styles.topRow}>
         <LogoChip onPress={() => router.push('/modules')} />
         <Pressable
-          onPress={() => (s.wallet ? null : run('connect', s.connect))}
+          onPress={() => {
+            if (Platform.OS === 'web') {
+              setNote({ text: 'Wallet connect works in the Android app, where it opens the Seeker wallet.', needsSol: false });
+              return;
+            }
+            if (!s.wallet) run('connect', s.connect);
+          }}
           style={[styles.walletChip, { boxShadow: shadow.raisedSoft }]}
           accessibilityRole="button"
         >
