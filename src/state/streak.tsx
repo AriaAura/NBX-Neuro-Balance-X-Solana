@@ -37,6 +37,8 @@ type Stored = {
   cravingsBeaten: number;
   proofs: ProofRecord[];
   wallet: WalletSession | null;
+  onboarded: boolean;
+  focusSessions: number;
 };
 
 const STORAGE_KEY = 'nbx/state/v1';
@@ -48,6 +50,8 @@ const initial: Stored = {
   cravingsBeaten: 0,
   proofs: [],
   wallet: null,
+  onboarded: false,
+  focusSessions: 0,
 };
 
 export function localDate(d = new Date()): string {
@@ -71,6 +75,8 @@ type StreakApi = Stored & {
   /** Signs today's Proof of Streak on Solana and advances the streak. */
   checkIn: () => Promise<ProofRecord>;
   recordCravingBeaten: () => void;
+  completeOnboarding: () => void;
+  recordFocusSession: () => void;
 };
 
 const StreakContext = createContext<StreakApi | null>(null);
@@ -137,6 +143,9 @@ export function StreakProvider({ children }: { children: ReactNode }) {
       checkIn,
       recordCravingBeaten: () =>
         setState((s) => ({ ...s, cravingsBeaten: s.cravingsBeaten + 1 })),
+      completeOnboarding: () => setState((s) => ({ ...s, onboarded: true })),
+      recordFocusSession: () =>
+        setState((s) => ({ ...s, focusSessions: s.focusSessions + 1 })),
     }),
     [state, ready, checkedInToday, connect, checkIn],
   );
